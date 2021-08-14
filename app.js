@@ -8,6 +8,7 @@ const shopRoutes = require('./routes/shop');
 
 
 app.use(express.urlencoded({extended: true}));
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/admin', adminRoutes);
 app.use(shopRoutes);
@@ -20,6 +21,3 @@ app.use((req, res, next) => {
 app.listen(3000, () => {
   console.log('Server listening on port 3000');
 });
-
-
-//module.exports = path.dirname(require.main.filename);
