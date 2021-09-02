@@ -3,7 +3,7 @@ const Product = require("../models/product");
 exports.getProducts = (req, res, next) => {
   Product.find()
     .then((products) => {
-      console.log(products)
+      console.log(products);
       res.render("shop/product-list", {
         prods: products,
         pageTitle: "All Products",
@@ -44,10 +44,11 @@ exports.getIndex = (req, res, next) => {
     });
 };
 
-exports.getCart = (req, res, next) => {
-  req.user
-    .getCart()
-    .then((products) => {
+exports.getCart = async (req, res, next) => {
+  await req.user
+    .populate("cart.items.productId")
+    .then((user) => {
+      const products = user.cart.items;
       res.render("shop/cart", {
         path: "/cart",
         pageTitle: "Your Cart",
