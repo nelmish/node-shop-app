@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 
 const bcrypt = require("bcryptjs");
+const { validationResult } = require("express-validator");
 
 const User = require("../models/user");
 
@@ -67,6 +68,16 @@ exports.postSignup = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(422).render("auth/signup", {
+      // 422 validation fails
+      path: "/signup",
+      pageTitle: "Signup",
+      errorMessage: errors.array(),
+    });
+  }
   User.findOne({ email: email })
     .then((userDoc) => {
       if (userDoc) {
@@ -125,17 +136,18 @@ exports.postReset = (req, res, next) => {
     }
     const token = buffer.toString("hex");
     User.findOne({ email: req.body.email })
-      .then(user => {
+      .then((user) => {
         if (!user) {
-          req.flash('error', "No account with that email found!");
-          return res.redirect('/reset');
+          req.flash("error", "No account with that email found!");
+          return res.redirect("/reset");
         }
         user.resetToken = token;
-        user.resetTokenExpiration = Date.now() + (60 * 60 * 1000);
+        user.resetTokenExpiration = Date.now() + 60 * 60 * 1000;
         return user.save();
-      }).then(result => {
-        console.log('email sent lol');
-        return res.redirect('/');
+      })
+      .then((result) => {
+        console.log("email sent lol");
+        return res.redirect("/");
       })
       .catch((err) => console.log(err));
   });
