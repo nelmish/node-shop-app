@@ -13,7 +13,8 @@ exports.getAddProduct = (req, res, next) => {
     path: "/admin/add-product",
     editing: false,
     hasError: false,
-    errorMessage:null
+    errorMessage:null,
+    validationErrors: []
   });
 };
 
@@ -37,9 +38,11 @@ exports.postAddProduct = (req, res, next) => {
         price: price,
         description: description,
       },
-      errorMessage: errors.array()[0].msg
+      errorMessage: errors.array()[0].msg,
+      validationErrors: errors.array()
     });
   }
+
   const product = new Product({
     title,
     price,
@@ -67,6 +70,7 @@ exports.getEditProduct = (req, res, next) => {
   const prodId = req.params.productId;
   Product.findById(prodId)
     .then((product) => {
+      console.log(product)
       if (!product) {
         return res.redirect("/");
       }
@@ -79,7 +83,8 @@ exports.getEditProduct = (req, res, next) => {
         editing: editMode,
         product: product,
         hasError: false,
-        errorMessage:null
+        errorMessage:null,
+        validationErrors: []
       });
     })
     .catch((err) => console.log(err));
@@ -91,21 +96,43 @@ exports.postEditProduct = (req, res, next) => {
   const updatedPrice = req.body.price;
   const updatedImageUrl = req.body.imageUrl;
   const updatedDescription = req.body.description;
+
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return res.status(422).render("admin/edit-product", {
+      // 422 = some data was incorrect
+      pageTitle: "Edit Product",
+      path: "/admin/edit-product",
+      editing: true,
+      hasError: true,
+      product: {
+        _id: prodId,
+        title: updatedTitle,
+        imageUrl: updatedImageUrl,
+        price: updatedPrice,
+        description: updatedDescription,
+      },
+      errorMessage: errors.array()[0].msg,
+      validationErrors: errors.array()
+    });
+  }
+
   Product.findById(prodId)
-    .then((product) => {
+    .then(product => {
       if (product.userId.toString() !== req.user._id.toString()) {
-        return res.redirect("/");
+        return res.redirect('/');
       }
       product.title = updatedTitle;
-      product.description = updatedDescription;
       product.price = updatedPrice;
+      product.description = updatedDescription;
       product.imageUrl = updatedImageUrl;
-      return product.save().then((result) => {
-        console.log("UPDATED PRODUCT");
-        res.redirect("/admin/products");
+      return product.save().then(result => {
+        console.log('UPDATED PRODUCT!');
+        res.redirect('/admin/products');
       });
     })
-    .catch((err) => console.log(err));
+    .catch(err => console.log(err));
 };
 
 exports.getProducts = (req, res, next) => {
