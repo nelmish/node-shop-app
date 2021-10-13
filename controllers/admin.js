@@ -29,7 +29,7 @@ exports.postAddProduct = (req, res, next) => {
     return res.status(422).render("admin/edit-product", {
       // 422 = some data was incorrect
       pageTitle: "Add Product",
-      path: "/admin/edit-product",
+      path: "/admin/add-product",
       editing: false,
       hasError: true,
       product: {
@@ -58,7 +58,22 @@ exports.postAddProduct = (req, res, next) => {
       res.redirect("/admin/products");
     })
     .catch((err) => {
-      console.log(err);
+      // return res.status(500).render("admin/edit-product", {
+      //   // 500 = server side issue
+      //   pageTitle: "Add Product",
+      //   path: "/admin/add-product",
+      //   editing: false,
+      //   hasError: true,
+      //   product: {
+      //     title: title,
+      //     imageUrl: imageUrl,
+      //     price: price,
+      //     description: description,
+      //   },
+      //   errorMessage: 'database operation failed, please try again',
+      //   validationErrors: []
+      // });
+      res.redirect('/500');
     });
 };
 
